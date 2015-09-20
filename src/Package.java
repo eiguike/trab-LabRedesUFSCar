@@ -12,29 +12,29 @@ import java.util.ArrayList;
  * @author thiago
  */
 public class Package {
-    private Integer sourceid;
-    private Integer destid;
-    private ArrayList<Integer> mincost;
+  private Integer sourceid;
+  private Integer destid;
+  private ArrayList<Integer> mincost;
     
-    public Package(Integer sourceid, Integer destid, ArrayList<Integer> minscost) {
-        this.sourceid = sourceid;
-        this.destid = destid;
-        this.mincost = minscost;
-    }
+  public Package(Integer sourceid, Integer destid, ArrayList<Integer> minscost) {
+    this.sourceid = sourceid;
+    this.destid = destid;
+    this.mincost = minscost;
+  }
     
-    public Integer getSourceId() {
-        return sourceid;
-    }
+  public Integer getSourceId() {
+    return sourceid;
+  }
     
-    public Integer getDest() {
-        return destid;
-    }
+  public Integer getDest() {
+    return destid;
+  }
     
-    public ArrayList<Integer> getMinCostArray() {
-        return mincost;
-    }
+  public ArrayList<Integer> getMinCostArray() {
+    return mincost;
+  }
     
-    public Integer getCostTo(Integer i) {
-        return mincost.get(i);
-    }
+  public Integer getCostTo(Integer i) {
+    return mincost.get(i);
+  }
 }

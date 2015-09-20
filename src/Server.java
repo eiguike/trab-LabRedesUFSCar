@@ -12,7 +12,7 @@ public class Server extends Thread{
   private Socket client = null;
   private ObjectInputStream input = null;
   private Integer pid;
-  private Package package;
+  private Package pkg;
 
   // Filas de mensagens recebidas e das que serão
   // enviadas
