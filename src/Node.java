@@ -14,13 +14,37 @@ import java.util.ArrayList;
 public class Node {
   
   private ArrayList<Integer> mindist;
+  private Integer table[][];
   
   public Node() {
+    this.table = new Integer[4][4];
   }
     
   public void rtinit(ArrayList<Integer> distance) {
     for (Integer i = 0; i < 4; i++) {
       mindist.add(distance.get(i));
+      
+      // Cria a tabela de distancias
+      
+      // Define a distancia para ou atraves do proprio node como -1
+      if (distance.get(i).equals(-1)) {
+        for (Integer j = 0; j < 4; j++) {
+          table[i][j] = -1;
+          table[j][i] = -1;
+        }
+        
+      // Se possuir ligacao direta com o node define a distancia minima como sendo o valor da distancia direta
+      } else if (!distance.get(i).equals(999)) {
+        table[i][i] = distance.get(i);
+        
+      // Se nao possuir ligacao direta com o node, define a distancia atraves de tal node como infinita (999)
+      } else {
+        for (Integer j = 0; j < 4; j++) {
+          if (table[j][i] != -1) {
+            table[j][i] = 999;
+          }
+        }
+      }
     }
   }
     
