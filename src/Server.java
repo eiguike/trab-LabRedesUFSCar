@@ -3,8 +3,8 @@ import java.net.*;
 import java.io.*;
 
 public class Server extends Thread{
-  // Tabela de nodes
-  private ArrayList<Node> table;
+  // Tabela de distancias
+  private int table[][];
 
   // Informações para o ServerSocket
   private Thread t;
@@ -22,23 +22,28 @@ public class Server extends Thread{
 
   // Número de Nós ativos
   private Integer processNum;
+  
+  // Node relativo ao server
+  private Node node;
 
   // Construtor do Servidor
-  Server(Integer pid){
+  Server(Integer pid, Node node){
     this.pid = pid;
-
+    this.node = node;
   }
 
   public void start(){
     if(t == null){
-      t = new Thread(this, threadName);
+      t = new Thread(this, "node" + pid);
       t.start();
     }
   }
 
   public void run(){
     try{
-      server = new ServerSocket(8000); // não esquecer de somar com a porta
+      server = new ServerSocket(8000 + pid); // não esquecer de somar com a porta
+      
+      node.rtinit();
 
       // loop que trata todas as mensagens recebidas
       do{
@@ -55,7 +60,7 @@ public class Server extends Thread{
         // Lê a stream e transforma em objeto
         synchronized(queueMsgRcvd){
           try{
-            queueMsgRcvd.add((Node) input.readObject());
+            queueMsgRcvd.add((Package) input.readObject());
           }catch (IOException ex){
             System.out.println(ex);
           }catch (ClassNotFoundException ex){
