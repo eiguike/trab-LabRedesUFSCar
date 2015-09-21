@@ -50,14 +50,11 @@ public class Node {
     
   public void rtupdate(Package pkg) {
     for (int i = 0; i < 4; i++) {
-      if (i != pkg.getSourceId()) {
-        // Se estiver vendo a distancia entre os dois nodes que se comunicaram, pega o menor valor de distancia
-        if (mindist.get(i).equals(-1) && mindist.get(pkg.getSourceId()) > pkg.getCostTo(i)) {
-          mindist.set(pkg.getSourceId(), pkg.getCostTo(i));
-
-          // Encontra a menor distancia até outro nó qualquer
-        } else if (mindist.get(i) > pkg.getCostTo(i) + mindist.get(pkg.getSourceId())) {
+      if (i != pkg.getSourceId() && !mindist.get(i).equals(-1)) {
+          // Encontra a menor distancia até outro nó qualquer através do remetente do pacote recebido
+        if (mindist.get(i) > pkg.getCostTo(i) + mindist.get(pkg.getSourceId())) {
           mindist.set(i, pkg.getCostTo(i) + mindist.get(pkg.getSourceId()));
+          table[i][pkg.getSourceId()] = pkg.getCostTo(i) + mindist.get(pkg.getSourceId());
         }
       }
     }
