@@ -28,93 +28,24 @@ public class Node {
 	private ArrayList<Package> message;
 	
 	// construtor
-	public Node(ArrayList<Integer> distance, ArrayList<Integer> pidConnected,Integer pid) {
-		this.table = new Integer[4][4];
-		mindist = distance;
-		this.pid = pid;
-
-		server();
-		startMessageHandler();
+	public Node(Integer pid, ArrayList<Integer> distance) {
+    this.pid = pid;
+    this.table = new Integer[4][4];
+    
+    message = new ArrayList<Package>();
+    
+    mindist = distance;
+      
+    server();
+    startMessageHandler();
+    rtinit();
 	}
-
-	// função que trata as mensagens recebidas
-	public void startMessageHandler(){
-		(new Thread(){
-			@Override
-			public void run(){	
-				Package aux = null;
-				Client auxClient;
-				Integer i;
-				do{
-					aux = null;
-					// acesso atômico da variável message
-					synchronized (message){
-						if(!message.isEmpty()){
-							aux = message.remove(0);
-						}else{
-							try{
-								message.wait();
-							}catch(InterruptedException e){
-								System.out.println(e);
-							}
-						}
-					}
-					if(aux != null){
-						// aqui deve-se verificar se rtupdate é true
-						// caso for true, deve-se enviar mensagem para
-						// todos os nós conectados
-						if(rtupdate(aux) == true){
-							for(i=0;i<mindist.size();i++){
-								// se estiver conectado, enviará
-								if(mindist.get(i) != 999)
-									auxClient = new Client(pid, i, mindist);
-							}
-						}
-					}
-				}while(true);
-			}
-
-		}).start();
-	}
-	
-	public void server(){
-		(new Thread(){
-			private int pid;
-			@Override
-			public void run(){
-				try{
-					server = new ServerSocket(8000+this.pid);
-					do{
-						serverSocket = server.accept();
-						try{
-							input = new ObjectInputStream(serverSocket.getInputStream());
-						}catch(IOException ex){
-							System.out.println(ex);
-						}
-						synchronized(message){
-							try{
-								message.add((Package) input.readObject());
-							} catch (ClassNotFoundException ex) {
-								Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-							}
-						}
-					}while(true);
-				}catch (IOException ex){
-					System.out.println(ex);
-				}
-			}
-		}).start();
-	}
-	
-	public void toLayer2(){
-		
-	}
-	
-	public void rtinit() {
+  
+  public void rtinit() {
 		for (Integer i = 0; i < 4; i++) {
 			// Cria a tabela de distancias
 			// Define a distancia para ou atraves do proprio node como -1
-			if (mindist.get(i).equals(-1)) {
+			if (i.equals(pid)) {
 				for (Integer j = 0; j < 4; j++) {
 					table[i][j] = -1;
 					table[j][i] = -1;
@@ -127,9 +58,7 @@ public class Node {
 			// Se nao possuir ligacao direta com o node, define a distancia atraves de tal node como infinita (999)
 			} else {
 				for (Integer j = 0; j < 4; j++) {
-					if (table[j][i] != -1) {
-						table[j][i] = 999;
-					}
+          table[j][i] = 999;
 				}
 			}
 		}
@@ -140,7 +69,7 @@ public class Node {
 		for (int i = 0; i < 4; i++) {
 			if (i != pkg.getSourceId() && !mindist.get(i).equals(-1)) {
 				// Encontra a menor distancia até outro nó qualquer através do remetente do pacote recebido
-				if (mindist.get(i) > pkg.getCostTo(i) + mindist.get(pkg.getSourceId())) {
+				if (mindist.get(i) > pkg.getCostTo(i) + mindist.get(pkg.getSourceId()) || table[i][pkg.getSourceId()] == null) {
 					mindist.set(i, pkg.getCostTo(i) + mindist.get(pkg.getSourceId()));
 					table[i][pkg.getSourceId()] = pkg.getCostTo(i) + mindist.get(pkg.getSourceId());
 					// quando houver de fato uma mudança na tabela de distância
@@ -153,4 +82,98 @@ public class Node {
 		
 		return tableUpdated;
 	}
+	
+	public void server() {
+		(new Thread() {
+			@Override
+			public void run() {
+				try {
+					server = new ServerSocket(8000+pid);
+					do {
+
+						serverSocket = server.accept();
+            try {
+							input = new ObjectInputStream(serverSocket.getInputStream());
+						} catch(IOException ex){
+							System.out.println(ex);
+						}
+						synchronized(message) {
+							try{
+								message.add((Package) input.readObject());
+							} catch (ClassNotFoundException ex) {
+								Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
+							}
+              message.notify();
+						}
+					} while(true);
+				} catch (IOException ex) {
+					System.out.println(ex);
+				}
+			}
+		}).start();
+	}
+  
+  // função que trata as mensagens recebidas
+	public void startMessageHandler(){
+		(new Thread(){
+			@Override
+			public void run() {	
+				Package aux;
+				do {
+					aux = null;
+					// acesso atômico da variável message
+					synchronized (message){
+						if(!message.isEmpty()) {
+							aux = message.remove(0);
+              System.out.println("node" + pid + ": mensagem de node" + aux.getSourceId() + " recebida");
+						} else {
+							try {
+                System.out.println("node" + pid + ": waiting");
+								message.wait();
+							} catch(InterruptedException e) {
+								System.out.println(e);
+							}
+						}
+					}
+					if(aux != null){
+						// aqui deve-se verificar se rtupdate é true
+						// caso for true, deve-se enviar mensagem para
+						// todos os nós conectados
+						if(rtupdate(aux) == true){
+							sendMessages();
+						}
+					}
+				} while(true);
+			}
+
+		}).start();
+	}
+  
+  public void sendMessages() {
+    Client auxClient;
+    
+    for(Integer i = 0; i < mindist.size(); i++) {
+			// se estiver conectado, enviará
+			if(!mindist.get(i).equals(999) && !mindist.get(i).equals(-1)) {
+        System.out.println("Mandando mensagem de node" + pid + " para node" + i);
+				auxClient = new Client(pid, i, mindist);
+        auxClient.start();
+      }
+		}
+  }
+  
+  public void printTable() {
+    System.out.println("Tabela do Node" + pid);
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        System.out.print(table[i][j] + "  ");
+      }
+      System.out.println();
+    }
+  }
+	
+	public void toLayer2(){
+		
+	}
+	
 }

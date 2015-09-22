@@ -57,7 +57,7 @@ public class Client extends Thread{
 			output.close();
 		} catch (IOException ex) {
 			Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-		}finally{
+		} finally {
 			// finaliza client
 			try{
 				if(client!=null)

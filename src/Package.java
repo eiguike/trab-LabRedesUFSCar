@@ -1,4 +1,5 @@
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /*
@@ -11,7 +12,7 @@ import java.util.ArrayList;
  *
  * @author thiago
  */
-public class Package {
+public class Package implements Serializable {
   private Integer sourceid;
   private Integer destid;
   private ArrayList<Integer> mincost;
