@@ -77,7 +77,7 @@ public class Node {
 		for (int i = 0; i < 4; i++) {
 			if (i != pkg.getSourceId() && !mindist.get(i).equals(-1)) {
         if (table[i][pkg.getSourceId()] == null || table[i][pkg.getSourceId()] > pkg.getCostTo(i) + table[pkg.getSourceId()][pkg.getSourceId()]) {
-					table[i][pkg.getSourceId()] = pkg.getCostTo(i) + mindist.get(pkg.getSourceId());
+					table[i][pkg.getSourceId()] = pkg.getCostTo(i) + table[pkg.getSourceId()][pkg.getSourceId()];
           if (mindist.get(i) > pkg.getCostTo(i) + table[pkg.getSourceId()][pkg.getSourceId()]) {
             mindist.set(i, pkg.getCostTo(i) + table[pkg.getSourceId()][pkg.getSourceId()]);
             mindistUpdated = true;
@@ -146,6 +146,7 @@ public class Node {
 						// caso for true, deve-se enviar mensagem para
 						// todos os nós conectados
 						if(rtupdate(aux) == true){
+              printTable();
 							sendMessages();
 						}
 					}
@@ -170,12 +171,9 @@ public class Node {
   
   public void printTable() {
     System.out.println("Tabela do Node" + pid);
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        System.out.print(table[i][j] + "  ");
-      }
-      System.out.println();
-    }
+    String format = "%-6d%-6d%-6d%-6d%n%-6d%-6d%-6d%-6d%n%-6d%-6d%-6d%-6d%n%-6d%-6d%-6d%-6d%n";
+    System.out.printf(format, table[0][0], table[0][1], table[0][2], table[0][3], table[1][0], table[1][1], table[1][2], table[1][3], table[2][0], table[2][1], table[2][2], table[2][3], table[3][0], table[3][1], table[3][2], table[3][3]);
+    System.out.println();
   }
 	
 	public void toLayer2(){
