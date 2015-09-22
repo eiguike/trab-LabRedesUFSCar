@@ -19,6 +19,7 @@ public class Node {
 	private Integer pid;
 	
 	private ArrayList<Integer> mindist;
+  private ArrayList<Boolean> connected;
 	private Integer table[][];
 	
 	// variáveis necessárias para o funcionamento do socket do servidor
@@ -33,6 +34,8 @@ public class Node {
     this.table = new Integer[4][4];
     
     message = new ArrayList<Package>();
+    
+    connected = new ArrayList<>();
     
     mindist = distance;
       
@@ -50,10 +53,12 @@ public class Node {
 					table[i][j] = -1;
 					table[j][i] = -1;
 				}
+        connected.add(Boolean.FALSE);
 				
 			// Se possuir ligacao direta com o node define a distancia minima como sendo o valor da distancia direta
 			} else if (!mindist.get(i).equals(999)) {
 				table[i][i] = mindist.get(i);
+        connected.add(Boolean.TRUE);
 				
 			// Se nao possuir ligacao direta com o node, define a distancia atraves de tal node como infinita (999)
 			} else {
@@ -62,6 +67,7 @@ public class Node {
               table[j][i] = 999;
             }
         }
+        connected.add(Boolean.FALSE);
 			}
 		}
 	}
@@ -70,10 +76,10 @@ public class Node {
 		boolean mindistUpdated = false;
 		for (int i = 0; i < 4; i++) {
 			if (i != pkg.getSourceId() && !mindist.get(i).equals(-1)) {
-        if (table[i][pkg.getSourceId()] == null || table[i][pkg.getSourceId()] > pkg.getCostTo(i) + mindist.get(pkg.getSourceId())) {
+        if (table[i][pkg.getSourceId()] == null || table[i][pkg.getSourceId()] > pkg.getCostTo(i) + table[pkg.getSourceId()][pkg.getSourceId()]) {
 					table[i][pkg.getSourceId()] = pkg.getCostTo(i) + mindist.get(pkg.getSourceId());
-          if (mindist.get(i) > pkg.getCostTo(i) + mindist.get(pkg.getSourceId())) {
-            mindist.set(i, pkg.getCostTo(i) + mindist.get(pkg.getSourceId()));
+          if (mindist.get(i) > pkg.getCostTo(i) + table[pkg.getSourceId()][pkg.getSourceId()]) {
+            mindist.set(i, pkg.getCostTo(i) + table[pkg.getSourceId()][pkg.getSourceId()]);
             mindistUpdated = true;
           }
 				}
@@ -154,7 +160,7 @@ public class Node {
     
     for(Integer i = 0; i < mindist.size(); i++) {
 			// se estiver conectado, enviará
-			if(!mindist.get(i).equals(999) && !mindist.get(i).equals(-1)) {
+			if(connected.get(i).equals(Boolean.TRUE)) {
         System.out.println("Mandando mensagem de node" + pid + " para node" + i);
 				auxClient = new Client(pid, i, mindist);
         auxClient.start();
