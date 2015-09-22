@@ -58,29 +58,29 @@ public class Node {
 			// Se nao possuir ligacao direta com o node, define a distancia atraves de tal node como infinita (999)
 			} else {
 				for (Integer j = 0; j < 4; j++) {
-          table[j][i] = 999;
-				}
+            if (table[j][i] == null) {
+              table[j][i] = 999;
+            }
+        }
 			}
 		}
 	}
 	
 	public boolean rtupdate(Package pkg) {
-		boolean tableUpdated = false;
+		boolean mindistUpdated = false;
 		for (int i = 0; i < 4; i++) {
 			if (i != pkg.getSourceId() && !mindist.get(i).equals(-1)) {
-				// Encontra a menor distancia até outro nó qualquer através do remetente do pacote recebido
-				if (mindist.get(i) > pkg.getCostTo(i) + mindist.get(pkg.getSourceId()) || table[i][pkg.getSourceId()] == null) {
-					mindist.set(i, pkg.getCostTo(i) + mindist.get(pkg.getSourceId()));
+        if (table[i][pkg.getSourceId()] == null || table[i][pkg.getSourceId()] > pkg.getCostTo(i) + mindist.get(pkg.getSourceId())) {
 					table[i][pkg.getSourceId()] = pkg.getCostTo(i) + mindist.get(pkg.getSourceId());
-					// quando houver de fato uma mudança na tabela de distância
-					// é definido uma flag para que seja feito o envio da tabela
-					// para os outros nós conectados
-					tableUpdated = true;
+          if (mindist.get(i) > pkg.getCostTo(i) + mindist.get(pkg.getSourceId())) {
+            mindist.set(i, pkg.getCostTo(i) + mindist.get(pkg.getSourceId()));
+            mindistUpdated = true;
+          }
 				}
 			}
 		}
 		
-		return tableUpdated;
+		return mindistUpdated;
 	}
 	
 	public void server() {
