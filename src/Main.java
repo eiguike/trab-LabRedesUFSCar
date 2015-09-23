@@ -60,7 +60,7 @@ public class Main {
     node3.sendMessages();
     
     try {
-      Thread.sleep(6000);
+      Thread.sleep(2000);
     } catch (InterruptedException ex) {
       Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
     }
